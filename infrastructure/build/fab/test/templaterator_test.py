@@ -20,10 +20,11 @@ from templaterator import Templaterator  # adjust import as needed
 
 
 @pytest.fixture(name="templaterator")
-def templaterator_setup(tmp_path: Path) -> Path:
+def templaterator_setup(tmp_path: Path) -> Templaterator:
     """
-    :returns: A dummy Templaterator object (in tmp_path),
-        which does not exist).
+    :returns: A dummy Templaterator object (in tmp_path,
+        which does not exist, but it's all we need for these tests since
+        all tests are mocked.
     """
     return Templaterator(tmp_path / "Templaterator.py")
 
