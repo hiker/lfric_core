@@ -573,8 +573,12 @@ def test_analyse_step(monkeypatch) -> None:
     monkeypatch.setattr(lfric_base, 'preprocess_x90_step', mock_preprocess)
     monkeypatch.setattr(lfric_base, 'psyclone_step', mock_psyclone)
 
-    # Call analyse_step
+    # The PSyclone step will modify sys.path (to allow import of
+    # psyclone_tools by PSyclone scripts). Make sure sys.path is unchanged:
+    old_sys_path = sys.path[:]
+    # Call analyse_step (which calls PSyclone)
     lfric_base.analyse_step()
+    assert sys.path == old_sys_path
 
     # Verify method calls
     mock_preprocess.assert_called_once()

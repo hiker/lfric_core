@@ -64,6 +64,10 @@ class LFRicBase(FabBase):
 
         self._psyclone_config = (self.config.source_root / 'psyclone_config' /
                                  'psyclone.cfg')
+        # Many PSyclone scripts use module(s) from this directory. Additional
+        # paths might need to be added later.
+        self._add_python_paths = [str(self.lfric_core_root / "infrastructure" /
+                                      "build" / "psyclone")]
 
     def define_command_line_options(
             self,
@@ -374,12 +378,16 @@ class LFRicBase(FabBase):
         if additional_parameters:
             psyclone_cli_args.extend(additional_parameters)
 
+        # To avoid impacting other code, store the original search path
+        old_sys_path = sys.path[:]
+        sys.path.extend(self._add_python_paths)
         psyclone(self.config, kernel_roots=[(self.config.build_output /
                                              "kernel")],
                  transformation_script=self.get_transformation_script,
                  api="dynamo0.3",
                  cli_args=psyclone_cli_args,
                  ignore_dependencies=ignore_dependencies)
+        sys.path = old_sys_path
 
     def get_psyclone_config(self) -> List[str]:
         '''

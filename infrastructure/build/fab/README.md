@@ -24,15 +24,6 @@ shorter), the default configuration will get the settings from the corresponding
 existing ```config.py``` scripts show how this can be done.
 
 
-## Setting up PYTHONPATH
-Many (if not all) PSyclone scripts use a library of convenience functions located in
-```$LFRIC_CORE/infrastructure/build/psyclone/psyclone_tools.py```. In order to be
-able to import these functions, the path ```$LFRIC_CORE/infrastructure/build/psyclone```
-must be added to your ```$PYTHONPATH```, e.g.:
-```
-export PYTHONPATH=$LFRIC_CORE/infrastructure/build/psyclone:$PYTHONPATH
-```
-
 ## Building the Skeleton Apps
 
 In order to build the skeleton apps, change into the directory
