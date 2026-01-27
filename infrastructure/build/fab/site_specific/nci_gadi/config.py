@@ -7,10 +7,7 @@ by the Baf scripts. This script:
 - Adds the tau compiler wrapper as (optional) compilers to the ToolRepository.
 '''
 
-from pathlib import Path
-from typing import List, Union, Optional
-
-from fab.api import BuildConfig, Category, Compiler, ToolRepository
+from fab.api import Category, ToolRepository
 
 from default.config import Config as DefaultConfig
 
