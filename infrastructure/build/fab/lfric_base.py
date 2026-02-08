@@ -24,7 +24,6 @@ from fab.api import (ArtefactSet, BuildConfig, Exclude, grab_folder, Include,
 from fab.fab_base.fab_base import FabBase
 
 from configurator import configurator
-from rose_picker_tool import get_rose_picker
 from templaterator import Templaterator
 
 
@@ -75,19 +74,14 @@ class LFRicBase(FabBase):
             ) -> argparse.ArgumentParser:
         '''
         This adds LFRic specific command line options to the base class
-        define_command_line_option. Currently, --rose_picker and
-        precision-related options are added.
+        define_command_line_option. Currently, precision-related options
+        are added.
 
         :param parser: optional a pre-defined argument parser.
 
         :returns: the argument parser with the LFRic specific options added.
         '''
         parser = super().define_command_line_options()
-
-        parser.add_argument(
-            '--rose_picker', '-rp', type=str, default="system",
-            help="Version of rose_picker. Use 'system' to use an installed "
-                 "version.")
 
         parser.add_argument(
             '--no-xios', action="store_true", default=False,
@@ -265,12 +259,6 @@ class LFRicBase(FabBase):
         '''
         rose_meta = self.get_rose_meta()
         if rose_meta:
-            # Get the right version of rose-picker, depending on
-            # command line option (defaulting to v2.0.0)
-            # TODO: Ideally we would just put this into the toolbox,
-            # but atm we can't put several tools of one category in
-            # (so ToolBox will need to support more than one MISC tool)
-            rp = get_rose_picker(self.args.rose_picker)
             # Ideally we would want to get all source files created in
             # the build directory, but then we need to know the list of
             # files to add them to the list of files to process. Instead,
@@ -279,8 +267,7 @@ class LFRicBase(FabBase):
             include_paths = include_paths or []
             configurator(self.config, lfric_core_source=self.lfric_core_root,
                          rose_meta_conf=rose_meta,
-                         include_paths=include_paths,
-                         rose_picker=rp)
+                         include_paths=include_paths)
 
     def templaterator_step(self, config: BuildConfig) -> None:
         '''
