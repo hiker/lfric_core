@@ -171,13 +171,11 @@ class LFRicBase(FabBase):
                 continue
 
             # No command line option for the current precision name.
-            # Check if a default was set (--precision-default)
-            if generic_default:
-                preprocessor_flags.append(f"-D{prec_name}="
-                                          f"{generic_default}")
-            else:
-                # Otherwise, use the default for this precision
-                preprocessor_flags.append(f"-D{prec_name}={prec_default}")
+            # Check if a default was set (--precision-default), otherwise
+            # use the default for this precision
+            preprocessor_flags.append(
+                f"-D{prec_name}="
+                f"{generic_default if generic_default else prec_default}")
 
         # core/components/lfric-xios/build/import.mk
         if not self.args.no_xios:
@@ -235,7 +233,6 @@ class LFRicBase(FabBase):
 
         :param path_filters: optional list of path filters to be passed to
             Fab find_source_files, default is None.
-        :type path_filters: Optional[Iterable[Exclude, Include]]
         '''
         self.configurator_step()
 
@@ -371,7 +368,7 @@ class LFRicBase(FabBase):
         psyclone(self.config, kernel_roots=[(self.config.build_output /
                                              "kernel")],
                  transformation_script=self.get_transformation_script,
-                 api="dynamo0.3",
+                 api="lfric",
                  cli_args=psyclone_cli_args,
                  ignore_dependencies=ignore_dependencies)
         sys.path = old_sys_path
