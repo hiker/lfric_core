@@ -17,7 +17,7 @@ from typing import cast, Optional
 from fab.api import BuildConfig, find_source_files, Category
 from fab.tools.shell import Shell
 
-from rose_picker_tool import RosePicker
+from rose_picker import RosePicker
 
 logger = logging.getLogger('fab')
 

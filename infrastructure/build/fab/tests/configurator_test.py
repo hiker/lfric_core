@@ -61,7 +61,7 @@ def test_configurator_runs_expected_sequence(mock_shell, tmp_path):
     config_namelist.write_text("namelist1\nnamelist2\n", encoding="utf8")
 
     # Run configurator
-    with patch("rose_picker_tool.RosePicker.execute",
+    with patch("rose_picker.RosePicker.execute",
                return_value=0) as rose_picker, \
             pytest.warns(match="_metric_send_conn not set, cannot "
                                "send metrics"):

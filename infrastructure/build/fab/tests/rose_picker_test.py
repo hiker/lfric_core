@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from rose_picker_tool import RosePicker
+from rose_picker import RosePicker
 
 
 def test_get_rose_picker_check_available() -> None:

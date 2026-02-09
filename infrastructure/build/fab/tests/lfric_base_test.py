@@ -232,12 +232,10 @@ def test_command_line_options(monkeypatch) -> None:
     Tests LFRic specific command line options.
     '''
     monkeypatch.setattr(sys, "argv", ["lfric_base.py",
-                                      "--rose_picker", "custom",
                                       "--precision-default", "32"])
 
     lfric_base = LFRicBase(name="test")
 
-    assert lfric_base.args.rose_picker == "custom"
     assert lfric_base.args.precision_default == "32"
 
 
@@ -437,12 +435,10 @@ def test_configurator_step(monkeypatch) -> None:
 
     # Create mock objects
     mock_config = mock.MagicMock()
-    mock_picker = mock.MagicMock(return_value="rose_picker_tool")
     mock_meta = mock.MagicMock(return_value="rose_meta.conf")
 
     # Set up mocks using monkeypatch
     monkeypatch.setattr('lfric_base.configurator', mock_config)
-    monkeypatch.setattr('lfric_base.get_rose_picker', mock_picker)
 
     lfric_base = LFRicBase(name="test")
     monkeypatch.setattr(lfric_base, 'get_rose_meta', mock_meta)
@@ -455,7 +451,6 @@ def test_configurator_step(monkeypatch) -> None:
         lfric_core_source=lfric_base.lfric_core_root,
         rose_meta_conf="rose_meta.conf",
         include_paths=[],
-        rose_picker="rose_picker_tool"
     )
 
 
@@ -665,13 +660,11 @@ def test_psyclone_step(monkeypatch) -> None:
     lfric_base.psyclone_step(additional_parameters=["-additional"])
 
     # Verify psyclone called with correct arguments
-    print(mock_psy.mock_calls)
-    print("UUU", mock_config_opts, mock_additional_opts)
     mock_psy.assert_called_once_with(
         lfric_base.config,
         kernel_roots=[(lfric_base.config.build_output / "kernel")],
         transformation_script=lfric_base.get_transformation_script,
-        api="dynamo0.3",
+        api="lfric",
         cli_args=mock_config_opts + mock_additional_opts + ["-additional"],
         ignore_dependencies=None
     )
