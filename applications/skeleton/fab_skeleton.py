@@ -35,7 +35,7 @@ class FabSkeleton(LFRicBase):
     :param name: The name of the application.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str = "skeleton") -> None:
         super().__init__(name=name)
         # Store the root of this apps for later
         this_file = Path(__file__).resolve()
@@ -70,5 +70,5 @@ if __name__ == '__main__':
 
     logger = logging.getLogger('fab')
     logger.setLevel(logging.DEBUG)
-    fab_skeleton = FabSkeleton(name="skeleton")
+    fab_skeleton = FabSkeleton()
     fab_skeleton.build()
