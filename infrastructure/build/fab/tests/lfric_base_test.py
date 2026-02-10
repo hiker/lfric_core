@@ -653,8 +653,6 @@ def test_psyclone_step(monkeypatch) -> None:
     # PSyclone modified these lists in the lambdas when it modifies the list
     monkeypatch.setattr(lfric_base, 'get_psyclone_config',
                         lambda: mock_config_opts[:])
-    monkeypatch.setattr(lfric_base, 'get_additional_psyclone_options',
-                        lambda: mock_additional_opts[:])
 
     # Call method under test
     lfric_base.psyclone_step(additional_parameters=["-additional"])
@@ -679,19 +677,8 @@ def test_get_psyclone_config(monkeypatch) -> None:
     lfric_base = LFRicBase(name="test")
     config_args = lfric_base.get_psyclone_config()
 
-    assert config_args == ["--config",
-                           str(lfric_base.config.source_root /
-                               'psyclone_config/psyclone.cfg')]
-
-
-def test_get_additional_psyclone_options(monkeypatch) -> None:
-    '''
-    Tests getting additional PSyclone options (for profiling).
-    '''
-    monkeypatch.setattr(sys, "argv", ["lfric_base.py"])
-
-    lfric_base = LFRicBase(name="test")
-    assert not lfric_base.get_additional_psyclone_options()
+    assert config_args == str(lfric_base.config.source_root /
+                              'psyclone_config/psyclone.cfg')
 
 
 def test_get_transformation_script(monkeypatch, tmp_path) -> None:

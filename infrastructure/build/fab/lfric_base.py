@@ -61,8 +61,6 @@ class LFRicBase(FabBase):
         if root_symbol:
             self.set_root_symbol(root_symbol)
 
-        self._psyclone_config = (self.config.source_root / 'psyclone_config' /
-                                 'psyclone.cfg')
         # Many PSyclone scripts use module(s) from this directory. Additional
         # paths might need to be added later.
         self._add_python_paths = [str(self.lfric_core_root / "infrastructure" /
@@ -343,22 +341,19 @@ class LFRicBase(FabBase):
             additional_parameters: Optional[list[str]] = None
             ) -> None:
         '''
-        This method runs Fab's psyclone. It first sets the additional psyclone
+        This method runs Fab's psyclone. It first sets the psyclone
         command line arguments by calling get_psyclone_config to get the
-        PSyclone configuration file and by calling
-        `get_additional_psyclone_options` to get additional psyclone command
-        line set by the user, e.g. for profiling, if any. Finally, Fab's
-        psyclone is called with the Fab build configuration, the kernel root
-        directory, the transformation script got through calling
-        `get_transformation_script`, the api, and the additional psyclone
-        command line arguments.
+        PSyclone configuration file. Additional flags can be set in the
+        PSyclone tool. Finally, Fab's psyclone is called with the Fab build
+        configuration, the kernel root directory, the transformation script
+        got through calling `get_transformation_script`, the api, and the
+        additional psyclone command line arguments.
 
         :param ignore_dependencies:
         :param additional_parameters: optional additional parameter for the
             PSyclone.
         '''
-        psyclone_cli_args = self.get_psyclone_config()
-        psyclone_cli_args.extend(self.get_additional_psyclone_options())
+        psyclone_cli_args = ["--config", self.get_psyclone_config()]
         if additional_parameters:
             psyclone_cli_args.extend(additional_parameters)
 
@@ -373,18 +368,12 @@ class LFRicBase(FabBase):
                  ignore_dependencies=ignore_dependencies)
         sys.path = old_sys_path
 
-    def get_psyclone_config(self) -> List[str]:
+    def get_psyclone_config(self) -> str:
         '''
-        :returns: the command line options to pick the right
-            PSyclone config file.
+        :returns: the PSyclone config file as string.
         '''
-        return ["--config", str(self._psyclone_config)]
-
-    def get_additional_psyclone_options(self) -> List[str]:
-        '''
-        A placeholder for additional PSyclone comand line options.
-        '''
-        return []
+        return str(self.config.source_root / 'psyclone_config' /
+                   'psyclone.cfg')
 
     def get_transformation_script(self, fpath: Path,
                                   config: BuildConfig) -> Optional[Path]:
