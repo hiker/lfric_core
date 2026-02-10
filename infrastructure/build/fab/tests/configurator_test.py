@@ -84,10 +84,10 @@ def test_configurator_runs_expected_sequence(mock_shell, tmp_path):
 
     # Check shell.exec was called with expected commands
     expected_calls = [
-        ((f"{tools_dir / 'GenerateNamelist'} "
+        ((f"{tools_dir / 'GenerateNamelistLoader'} "
           f"-verbose {config_dir / 'rose-meta.json'} "
           f"-directory {config_dir}"),),
-        ((f"{tools_dir / 'GenerateLoader'} "
+        ((f"{tools_dir / 'GenerateConfigLoader'} "
           f"{config_dir / 'configuration_mod.f90'} "
           f"namelist1 namelist2"),),
         ((f"{tools_dir / 'GenerateFeigns'} {config_dir / 'rose-meta.json'} "

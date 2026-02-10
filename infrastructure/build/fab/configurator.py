@@ -65,7 +65,7 @@ def configurator(config: BuildConfig,
     # --------------------
     # builds a bunch of f90s from the json
     logger.info('GenerateNamelist')
-    shell.exec(f"{tools / 'GenerateNamelist'} -verbose {rose_meta} "
+    shell.exec(f"{tools / 'GenerateNamelistLoader'} -verbose {rose_meta} "
                f"-directory {config_dir}")
 
     # create configuration_mod.f90 in source root
@@ -75,7 +75,7 @@ def configurator(config: BuildConfig,
         names = [name.strip() for name in f_in.readlines()]
 
     configuration_mod_fpath = config_dir / 'configuration_mod.f90'
-    shell.exec(f"{tools / 'GenerateLoader'} {configuration_mod_fpath} "
+    shell.exec(f"{tools / 'GenerateConfigLoader'} {configuration_mod_fpath} "
                f"{' '.join(names)}")
 
     # create feign_config_mod.f90 in source root
