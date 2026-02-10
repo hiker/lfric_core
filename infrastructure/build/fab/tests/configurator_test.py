@@ -60,6 +60,10 @@ def test_configurator_runs_expected_sequence(mock_shell, tmp_path):
     config_namelist = config_dir / "config_namelists.txt"
     config_namelist.write_text("namelist1\nnamelist2\n", encoding="utf8")
 
+    # Simulate duplicate_namelist.txt:
+    duplicate_namelist = config_dir / "duplicate_namelists.txt"
+    duplicate_namelist.write_text("duplicate1\nduplicate2\n", encoding="utf8")
+
     # Run configurator
     with patch("rose_picker.RosePicker.execute",
                return_value=0) as rose_picker, \
@@ -88,8 +92,13 @@ def test_configurator_runs_expected_sequence(mock_shell, tmp_path):
           f"-verbose {config_dir / 'rose-meta.json'} "
           f"-directory {config_dir}"),),
         ((f"{tools_dir / 'GenerateConfigLoader'} "
-          f"{config_dir / 'configuration_mod.f90'} "
-          f"namelist1 namelist2"),),
+          f"namelist1 namelist2 -o {config_dir}"),),
+        ((f"{tools_dir / 'GenerateExtendedNamelistType'} "
+          f"{config_dir / 'rose-meta.json'} "
+          f"-directory {config_dir}"),),
+        ((f"{tools_dir / 'GenerateConfigType'} "
+          f"namelist1 namelist2 -duplicate duplicate1 -duplicate duplicate2 "
+          f"-o {config_dir}"),),
         ((f"{tools_dir / 'GenerateFeigns'} {config_dir / 'rose-meta.json'} "
           f"-output {config_dir / 'feign_config_mod.f90'}"),)
     ]

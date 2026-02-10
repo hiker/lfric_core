@@ -64,7 +64,7 @@ def configurator(config: BuildConfig,
     # build_config_loaders
     # --------------------
     # builds a bunch of f90s from the json
-    logger.info('GenerateNamelist')
+    logger.info('GenerateNamelistLoader')
     shell.exec(f"{tools / 'GenerateNamelistLoader'} -verbose {rose_meta} "
                f"-directory {config_dir}")
 
