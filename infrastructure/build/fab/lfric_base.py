@@ -385,6 +385,7 @@ class LFRicBase(FabBase):
 
         :param fpath: the path to the file being processed.
         :param config: the FAB BuildConfig instance.
+
         :returns: the transformation script to be used by PSyclone.
         '''
         # Newer LFRic versions have a psykal directory

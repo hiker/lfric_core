@@ -70,13 +70,28 @@ def configurator(config: BuildConfig,
 
     # create configuration_mod.f90 in source root
     # -------------------------------------------
-    logger.info('GenerateLoader')
+    logger.info('GenerateConfigLoader')
     with open(config_dir / 'config_namelists.txt', encoding="utf8") as f_in:
         names = [name.strip() for name in f_in.readlines()]
 
-    configuration_mod_fpath = config_dir / 'configuration_mod.f90'
-    shell.exec(f"{tools / 'GenerateConfigLoader'} {configuration_mod_fpath} "
-               f"{' '.join(names)}")
+    shell.exec(f"{tools / 'GenerateConfigLoader'} "
+               f"{' '.join(names)} "
+               f"-o {config_dir}")
+
+    logger.info('GenerateExtendedNamelistType')
+    shell.exec(f"{tools / 'GenerateExtendedNamelistType'} {rose_meta} "
+               f"-directory {config_dir}")
+
+    duplicates: list[str] = []
+    with open(config_dir / 'duplicate_namelists.txt', encoding="utf8") as f_in:
+        for name in f_in.readlines():
+            duplicates.extend(["-duplicate", name.strip()])
+
+    logger.info('GenerateConfigType')
+    shell.exec(f"{tools / 'GenerateConfigType'} "
+               f"{' '.join(names)} "
+               f"{' '.join(duplicates)} "
+               f"-o {config_dir}")
 
     # create feign_config_mod.f90 in source root
     # ------------------------------------------
