@@ -48,10 +48,10 @@ def configurator(config: BuildConfig,
     # gungho/build
     logger.info('rose_picker')
 
-    include_dirs = [lfric_core_source, lfric_core_source / 'rose-meta']
+    include_dirs = [lfric_core_source / 'rose-meta']
     if include_paths:
         for path in include_paths:
-            include_dirs.extend([path, path / 'rose-meta'])
+            include_dirs.append(path / 'rose-meta')
 
     rose_picker = RosePicker()
     rose_picker.execute(rose_meta_conf, config_dir,

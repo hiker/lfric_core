@@ -83,8 +83,8 @@ def test_configurator_runs_expected_sequence(mock_shell, tmp_path):
     rose_picker.assert_called_once()
     rose_picker.assert_called_with(
         rose_meta_conf, config_dir,
-        include_paths=[lfric_core, lfric_core / "rose-meta",
-                       lfric_apps, lfric_apps / "rose-meta"])
+        include_paths=[lfric_core / "rose-meta",
+                       lfric_apps / "rose-meta"])
 
     # Check shell.exec was called with expected commands
     expected_calls = [
