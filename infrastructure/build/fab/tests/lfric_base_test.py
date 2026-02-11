@@ -461,7 +461,9 @@ def test_templaterator_step(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(sys, "argv", ["lfric_base.py"])
 
     # Create mock template file
-    template_file = tmp_path / "field.t90"
+    source_path = tmp_path / "source"
+    source_path.mkdir(parents=True)
+    template_file = source_path / "field.t90"
     template_file.write_text("template content", encoding='utf-8')
 
     # Create mock templaterator
@@ -471,16 +473,8 @@ def test_templaterator_step(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr('lfric_base.Templaterator', mock_templaterator)
 
     # Mock input_to_output_fpath
-    mock_output_path = tmp_path / "build" / "output"
+    mock_output_path = tmp_path / "build_output"
     mock_output_path.mkdir(parents=True)
-    monkeypatch.setattr('lfric_base.input_to_output_fpath',
-                        lambda config, input_path: (mock_output_path /
-                                                    input_path.name))
-
-    # Mock SuffixFilter to return our template file
-    mock_filter = mock.MagicMock()
-    mock_filter.return_value = {template_file}
-    monkeypatch.setattr('lfric_base.SuffixFilter', lambda *args: mock_filter)
 
     # Create mock config with proper artefact store
     mock_artefact_store = mock.MagicMock()
@@ -488,7 +482,13 @@ def test_templaterator_step(monkeypatch, tmp_path) -> None:
 
     config = mock.MagicMock()
     config.artefact_store = mock_artefact_store
-    config.build_output = tmp_path
+    config.build_output = mock_output_path
+    config.source_root = source_path
+
+    # Mock SuffixFilter to return our template file
+    mock_filter = mock.MagicMock()
+    mock_filter.return_value = {template_file}
+    monkeypatch.setattr('lfric_base.SuffixFilter', lambda *args: mock_filter)
 
     # Create LFRicBase instance
     lfric_base = LFRicBase(name="test")
@@ -511,6 +511,7 @@ def test_templaterator_step(monkeypatch, tmp_path) -> None:
     ]
 
     for template in templates:
+        out_file = mock_output_path / f"field_{template['kind']}_mod.f90"
         out_file = mock_output_path / f"field_{template['kind']}_mod.f90"
         expected_calls.append(
             mock.call(template_file, out_file, key_values=template)
@@ -641,8 +642,7 @@ def test_psyclone_step(monkeypatch) -> None:
 
     # Create mock objects
     mock_psy = mock.MagicMock()
-    mock_config_opts = ["--config", "/mock/psyclone.cfg"]
-    mock_additional_opts: List[str] = []
+    mock_psyclone_config = "/mock/psyclone.cfg"
 
     # Set up monkeypatch for module level import
     monkeypatch.setattr('lfric_base.psyclone', mock_psy)
@@ -652,7 +652,7 @@ def test_psyclone_step(monkeypatch) -> None:
     # Patch instance methods. Return a copy to avoid that
     # PSyclone modified these lists in the lambdas when it modifies the list
     monkeypatch.setattr(lfric_base, 'get_psyclone_config',
-                        lambda: mock_config_opts[:])
+                        lambda: mock_psyclone_config)
 
     # Call method under test
     lfric_base.psyclone_step(additional_parameters=["-additional"])
@@ -663,7 +663,7 @@ def test_psyclone_step(monkeypatch) -> None:
         kernel_roots=[(lfric_base.config.build_output / "kernel")],
         transformation_script=lfric_base.get_transformation_script,
         api="lfric",
-        cli_args=mock_config_opts + mock_additional_opts + ["-additional"],
+        cli_args=(["--config", mock_psyclone_config, "-additional"]),
         ignore_dependencies=None
     )
 

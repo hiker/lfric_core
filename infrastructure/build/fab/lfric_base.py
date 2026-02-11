@@ -278,18 +278,22 @@ class LFRicBase(FabBase):
         t90_filter = SuffixFilter(ArtefactSet.INITIAL_SOURCE_FILES,
                                   [".t90", ".T90"])
         template_files = t90_filter(config.artefact_store)
-        # Don't bother with parallelising this, atm there is only one file:
+        templ_r32 = {"kind": "real32", "type": "real"}
+        templ_r64 = {"kind": "real64", "type": "real"}
+        templ_i32 = {"kind": "int32", "type": "integer"}
+        # Don't bother with parallelising this, it's fast
         for template_file in template_files:
             out_dir = input_to_output_fpath(config=config,
                                             input_path=template_file).parent
             out_dir.mkdir(parents=True, exist_ok=True)
-            templ_r32 = {"kind": "real32", "type": "real"}
-            templ_r64 = {"kind": "real64", "type": "real"}
-            templ_i32 = {"kind": "int32", "type": "integer"}
+            template_stem = template_file.stem.removesuffix("_mod")
             for key_values in [templ_r32, templ_r64, templ_i32]:
-                out_file = out_dir / f"field_{key_values['kind']}_mod.f90"
+                out_file = (out_dir /
+                            f"{template_stem}_{key_values['kind']}_mod.f90")
                 templaterator.process(template_file, out_file,
                                       key_values=key_values)
+                # Add the newly created file to the set of
+                # Fortran files to compile
                 config.artefact_store.add(ArtefactSet.FORTRAN_COMPILER_FILES,
                                           out_file)
 
