@@ -13,7 +13,6 @@ script.
 """
 
 import argparse
-import os
 from pathlib import Path
 import sys
 from typing import List, Optional, Iterable, Union
@@ -161,11 +160,6 @@ class LFRicBase(FabBase):
             if getattr(self.args, f"{prec_name.lower()}_specified", False):
                 value = getattr(self.args, prec_name.lower())
                 preprocessor_flags.append(f"-D{prec_name}={value}")
-                continue
-            # Check for environment variable which can overwrite the default:
-            env_precision = os.environ.get(prec_name)
-            if env_precision:
-                preprocessor_flags.append(f"-D{prec_name}={env_precision}")
                 continue
 
             # No command line option for the current precision name.

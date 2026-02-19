@@ -286,8 +286,9 @@ def test_precision_definition_with_default(monkeypatch) -> None:
     assert '-DR_SOLVER_PRECISION=32' in flags
     # Specified default of any precision
     assert '-DR_TRAN_PRECISION=32' in flags
-    # From environment variable
-    assert '-DR_BL_PRECISION=64' in flags
+    # Old style environment variables must be ignored, so R_BL_PRECISION
+    # must still be 32!
+    assert '-DR_BL_PRECISION=32' in flags
 
 
 @pytest.mark.parametrize('no_xios', [True, False])
