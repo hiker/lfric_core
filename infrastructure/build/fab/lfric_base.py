@@ -133,7 +133,6 @@ class LFRicBase(FabBase):
         baf base would set up).
         '''
         this_dir = Path(__file__).parent
-        sys.path.insert(0, str(this_dir))
         # We need to add the 'site_specific' directory to the path, so
         # each config can import from 'default' (instead of having to
         # use 'site_specific.default', which would hard-code the name
