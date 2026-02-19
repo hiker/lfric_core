@@ -18,7 +18,7 @@ import sys
 from typing import List, Optional, Iterable, Union
 
 from fab.api import (ArtefactSet, BuildConfig, Exclude, grab_folder, Include,
-                     input_to_output_fpath, preprocess_x90, psyclone,
+                     input_to_output_fpath, preprocess_x90, psyclone, step,
                      SuffixFilter)
 from fab.fab_base.fab_base import FabBase
 
@@ -233,6 +233,7 @@ class LFRicBase(FabBase):
 
         self.templaterator_step(self.config)
 
+    @step
     def configurator_step(
             self,
             include_paths: Optional[list[Path]] = None) -> None:
@@ -257,6 +258,7 @@ class LFRicBase(FabBase):
                          rose_meta_conf=rose_meta,
                          include_paths=include_paths)
 
+    @step
     def templaterator_step(self, config: BuildConfig) -> None:
         '''
         This method runs the LFRic templaterator Fab tool.
