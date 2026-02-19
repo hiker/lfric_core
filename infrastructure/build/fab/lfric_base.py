@@ -369,6 +369,10 @@ class LFRicBase(FabBase):
 
     def get_psyclone_config(self) -> str:
         '''
+        This method can be overwritten if an application needs to provide
+        a modified psyclone config file (e.g. to enable additional
+        debug options).
+
         :returns: the PSyclone config file as string.
         '''
         return str(self.config.source_root / 'psyclone_config' /
