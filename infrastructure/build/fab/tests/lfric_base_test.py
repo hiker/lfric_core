@@ -496,7 +496,8 @@ def test_templaterator_step(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(lfric_base, '_lfric_core_root', tmp_path)
 
     # Run templaterator step
-    lfric_base.templaterator_step(config)
+    with pytest.warns(match="_metric_send_conn not set, cannot send metrics"):
+        lfric_base.templaterator_step(config)
 
     # Verify templaterator initialization
     mock_templaterator.assert_called_once_with(tmp_path / "infrastructure" /
@@ -510,7 +511,6 @@ def test_templaterator_step(monkeypatch, tmp_path) -> None:
         {"kind": "real64", "type": "real"},
         {"kind": "int32", "type": "integer"}
     ]
-
     for template in templates:
         out_file = mock_output_path / f"field_{template['kind']}_mod.f90"
         out_file = mock_output_path / f"field_{template['kind']}_mod.f90"
@@ -534,7 +534,9 @@ def test_templaterator_step(monkeypatch, tmp_path) -> None:
 
     # Test empty template files case
     mock_filter.return_value = set()
-    lfric_base.templaterator_step(config)
+
+    with pytest.warns(match="_metric_send_conn not set, cannot send metrics"):
+        lfric_base.templaterator_step(config)
     # Call count should remain the same since no new files processed
     assert mock_templaterator_instance.process.call_count == 3
 
