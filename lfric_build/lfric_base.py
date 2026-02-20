@@ -53,7 +53,7 @@ class LFRicBase(FabBase):
 
         this_file = Path(__file__)
         # The root directory of the LFRic Core
-        self._lfric_core_root = this_file.parents[3]
+        self._lfric_core_root = this_file.parents[1]
 
         # If the user wants to overwrite the default root symbol (which
         # is `name`):
