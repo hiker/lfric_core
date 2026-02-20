@@ -395,17 +395,26 @@ class LFRicBase(FabBase):
         optimisation_path = (config.source_root / "optimisation" /
                              f"{self.site}-{self.platform}" / "psykal")
         relative_path = None
+        # The soure file might be either in build_output (e.g. a preprocessed
+        # .X90 file), or still in source (.x90 file). Check if the file
+        # is in one of the two sub-trees, and use the relative path to
+        # check if there is a file-specific optimisation script
         for base_path in [config.source_root, config.build_output]:
             try:
                 relative_path = fpath.relative_to(base_path)
             except ValueError:
+                # The file is not under the `base_path` - keep on checking
                 pass
+
         if relative_path:
+            # The file was under either source or build. Check if there
+            # is a file-specific optimisation script:
             local_transformation_script = (optimisation_path /
                                            (relative_path.with_suffix('.py')))
             if local_transformation_script.exists():
                 return local_transformation_script
 
+        # No file-specific optimisation script found. Check for global.py:
         global_transformation_script = optimisation_path / 'global.py'
         if global_transformation_script.exists():
             return global_transformation_script
