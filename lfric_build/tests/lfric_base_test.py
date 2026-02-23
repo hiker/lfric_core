@@ -185,7 +185,7 @@ def test_get_directory(monkeypatch, tmp_path) -> None:
     mock_core.mkdir(parents=True)
 
     # Create mock LFRic base file location
-    mock_base_dir = mock_core / "infrastructure" / "build" / "fab"
+    mock_base_dir = mock_core / "lfric_build"
     mock_base_dir.mkdir(parents=True)
     mock_base_file = mock_base_dir / "lfric_base.py"
     mock_base_file.write_text("", encoding='utf-8')
@@ -444,7 +444,8 @@ def test_configurator_step(monkeypatch) -> None:
     lfric_base = LFRicBase(name="test")
     monkeypatch.setattr(lfric_base, 'get_rose_meta', mock_meta)
 
-    lfric_base.configurator_step()
+    with pytest.warns(match="_metric_send_conn not set, cannot send metrics"):
+        lfric_base.configurator_step()
 
     # Verify configurator called with correct arguments
     mock_config.assert_called_once_with(
