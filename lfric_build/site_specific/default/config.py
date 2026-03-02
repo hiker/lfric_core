@@ -44,7 +44,7 @@ class Config:
 
         :returns List[str]: list of all supported compiler profiles.
         '''
-        return ["full-debug", "fast-debug", "production", "unit-tests"]
+        return ["full-debug", "fast-debug", "production"]
 
     def update_toolbox(self, build_config: BuildConfig) -> None:
         '''
