@@ -78,10 +78,6 @@ def setup_script_gnu(build_config: BuildConfig,
     # ==========
     gfortran.add_flags(["-Ofast"], "production")
 
-    # unit-tests
-    # ==========
-    gfortran.add_flags(runtime + ["-O0"] + init, "unit-tests")
-
     # Set up the linker
     # =================
     # This will implicitly affect all gfortran based linkers, e.g.
