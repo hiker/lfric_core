@@ -32,14 +32,19 @@ class LFRicBase(FabBase):
 
     :param name: the name to be used for the workspace. Note that
         the name of the compiler will be added to it.
+    :param apps_dir: the base directory of the application.
     :param root_symbol: the symbol (or list of symbols) of the main
         programs. Defaults to the parameter `name` if not specified.
 
     '''
     # pylint: disable=too-many-instance-attributes
     def __init__(self, name: str,
+                 apps_dir: Path,
                  root_symbol: Optional[Union[List[str], str]] = None
                  ):
+
+        self._apps_dir = apps_dir
+        # Will be set to true if a unit-test directory is found
 
         # List of all precision preprocessor symbols and their default.
         # Used to add corresponding command line options, and then to define
@@ -64,6 +69,20 @@ class LFRicBase(FabBase):
         # paths might need to be added later.
         self._add_python_paths = [str(self.lfric_core_root / "infrastructure" /
                                       "build" / "psyclone")]
+
+    @property
+    def apps_dir(self) -> Path:
+        """
+        :returns: the root directory of the application.
+        """
+        return self._apps_dir
+
+    @property
+    def lfric_core_root(self) -> Path:
+        '''
+        :returns: the root directory of the LFRic core repository.
+        '''
+        return self._lfric_core_root
 
     def define_command_line_options(
             self,
@@ -116,13 +135,6 @@ class LFRicBase(FabBase):
                      f"in this order.")
 
         return parser
-
-    @property
-    def lfric_core_root(self) -> Path:
-        '''
-        :returns: the root directory of the LFRic core repository.
-        '''
-        return self._lfric_core_root
 
     def setup_site_specific_location(self):
         '''
@@ -179,7 +191,7 @@ class LFRicBase(FabBase):
 
     def get_linker_flags(self) -> List[str]:
         '''
-        This method overwrites the base class get_liner_flags. It passes the
+        This method overwrites the base class get_linker_flags. It passes the
         libraries that LFRic uses to the linker. Currently, these libraries
         include yaxt, xios, netcdf and hdf5.
 
@@ -208,8 +220,7 @@ class LFRicBase(FabBase):
                         dst_label='')
 
         # Copy the PSyclone Config file into a separate directory
-        dir = "etc"
-        grab_folder(self.config, src=self.lfric_core_root / dir,
+        grab_folder(self.config, src=self.lfric_core_root / "etc",
                     dst_label='psyclone_config')
 
     def find_source_files_step(
@@ -228,6 +239,8 @@ class LFRicBase(FabBase):
         self.configurator_step()
 
         path_filter_list = list(path_filters) if path_filters else []
+        # If testing is used (via LFRicBaseWithTest), unit-test will
+        # be handled there.
         path_filter_list.append(Exclude('unit-test', '/test/'))
         super().find_source_files_step(path_filters=path_filter_list)
 
