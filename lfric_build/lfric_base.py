@@ -43,8 +43,9 @@ class LFRicBase(FabBase):
 
         # List of all precision preprocessor symbols and their default.
         # Used to add corresponding command line options, and then to define
-        # the preprocessor definitions.
-        self._all_precisions = [("RDEF_PRECISION", "64"),
+        # the preprocessor definitions. Note that precision_other
+        # becomes RDEF.
+        self._all_precisions = [("precision_other", "64"),
                                 ("R_SOLVER_PRECISION", "32"),
                                 ("R_TRAN_PRECISION", "64"),
                                 ("R_BL_PRECISION", "64")]
@@ -91,29 +92,15 @@ class LFRicBase(FabBase):
             description="Arguments related to setting the floating "
                         "point precision.")
 
-        group.add_argument(
-            '--precision-default', type=str, default=None,
-            choices=['32', '64'], help="Default precision for reals.")
-
-        # We need to distinguish if a user specified a value (even if it is
-        # the default), or not. Use the following action for argparse:
-        class StoreWithFlag(argparse.Action):
-            """
-            Helper class to add a `XX_specified` entry for command line
-            options that the user has explicitly specified.
-            """
-            def __call__(self, parser, namespace, values, option_string=None):
-                setattr(namespace, self.dest, values)
-                setattr(namespace, f"{self.dest}_specified", True)
-
         for prec_name, default in self._all_precisions:
             lower_name = prec_name.lower()
+            if prec_name == "precision_other":
+                help_msg = "Precision for other floating point values."
+            else:
+                help_msg = f"Precision for '{prec_name}'."
             group.add_argument(
                 f'--{lower_name}', type=str, choices=['32', '64'],
-                default=default, action=StoreWithFlag,
-                help=f"Precision for '{prec_name}'. Default will be "
-                     f"overwritten by ${prec_name} or --precision-default "
-                     f"in this order.")
+                default=default, help=help_msg)
 
         return parser
 
@@ -150,23 +137,14 @@ class LFRicBase(FabBase):
         '''
         preprocessor_flags: List[str] = []
 
-        # Take the value of --precision-default (or None if not specified):
-        generic_default = self.args.precision_default
-
         # Check all required precision defines
-        for prec_name, prec_default in self._all_precisions:
+        for prec_name, _ in self._all_precisions:
             # Check if a value was specified on the command line:
-            if getattr(self.args, f"{prec_name.lower()}_specified", False):
-                value = getattr(self.args, prec_name.lower())
+            value = getattr(self.args, prec_name.lower())
+            if prec_name == "precision_other":
+                preprocessor_flags.append(f"-DRDEF_PRECISION={value}")
+            else:
                 preprocessor_flags.append(f"-D{prec_name}={value}")
-                continue
-
-            # No command line option for the current precision name.
-            # Check if a default was set (--precision-default), otherwise
-            # use the default for this precision
-            preprocessor_flags.append(
-                f"-D{prec_name}="
-                f"{generic_default if generic_default else prec_default}")
 
         # core/components/lfric-xios/build/import.mk
         if not self.args.no_xios:
