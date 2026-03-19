@@ -227,18 +227,6 @@ def test_get_directory(monkeypatch, tmp_path) -> None:
     assert lfric_base.lfric_core_root == mock_core
 
 
-def test_command_line_options(monkeypatch) -> None:
-    '''
-    Tests LFRic specific command line options.
-    '''
-    monkeypatch.setattr(sys, "argv", ["lfric_base.py",
-                                      "--precision-default", "32"])
-
-    lfric_base = LFRicBase(name="test")
-
-    assert lfric_base.args.precision_default == "32"
-
-
 def test_precision_definition_without_default(monkeypatch) -> None:
     '''
     Tests specification of precision if no default precision is
@@ -248,7 +236,7 @@ def test_precision_definition_without_default(monkeypatch) -> None:
     R_*PRECISION default.
     '''
     monkeypatch.setattr(sys, "argv", ["lfric_base.py",
-                                      "--rdef_precision", "32"])
+                                      "--precision_other", "32"])
     monkeypatch.setattr(os, 'environ', {"R_BL_PRECISION": "64"})
 
     lfric_base = LFRicBase(name="test")
@@ -263,32 +251,6 @@ def test_precision_definition_without_default(monkeypatch) -> None:
     assert '-DR_TRAN_PRECISION=64' in flags
     # From environment variable
     assert '-DR_BL_PRECISION=64' in flags
-
-
-def test_precision_definition_with_default(monkeypatch) -> None:
-    '''
-    Tests specification of precision. Test all ways a precision
-    can be specified: default command line, explicit command
-    line, environment variable, and the per R_*PRECISION default.
-    '''
-    monkeypatch.setattr(sys, "argv", ["lfric_base.py",
-                                      "--precision-default", "32",
-                                      "--rdef_precision", "64"])
-    monkeypatch.setattr(os, 'environ', {"R_BL_PRECISION": "64"})
-
-    lfric_base = LFRicBase(name="test")
-    lfric_base.define_preprocessor_flags_step()
-
-    flags = lfric_base.preprocess_flags_common
-    # Explicitly set on command line:
-    assert '-DRDEF_PRECISION=64' in flags
-    # Specified default of any precision
-    assert '-DR_SOLVER_PRECISION=32' in flags
-    # Specified default of any precision
-    assert '-DR_TRAN_PRECISION=32' in flags
-    # Old style environment variables must be ignored, so R_BL_PRECISION
-    # must still be 32!
-    assert '-DR_BL_PRECISION=32' in flags
 
 
 @pytest.mark.parametrize('no_xios', [True, False])
