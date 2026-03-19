@@ -17,9 +17,10 @@
 | harry-shepherd   | Harry Shepherd         | Met Office            | 2026-01-08 |
 | EdHone           | Ed Hone                | Met Office            | 2026-01-09 |
 | tom-j-h          | Tom Hill               | Met Office            | 2026-01-19 |
+| mo-alistairp     | Alistair Pirrie        | Met Office            | 2026-01-12 |
 | t00sa            | Sam Clarke-Green       | Met Office            | 2026-01-27 |
 | MetBenjaminWent  | Benjamin Went          | Met Office            | 2026-01-30 |
 | jcsmeto          | James Cunningham-Smith | Met Office            | 2026-02-06 |
 | thomasmelvin     | Thomas Melvin          | Met Office            | 2026-01-15 |
+| ericaneininger   | Erica Neininger        | Met Office            | 2026-03-02 |
 | hiker            | Joerg Henrichs         | Bureau of Meteorology | 2026-02-11 |
-| mo-alistairp     | Alistair Pirrie        | Met Office            | 2026-01-12 |
