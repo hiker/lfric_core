@@ -22,10 +22,11 @@ from fab.steps.grab.folder import grab_folder
 # We need to import the base class:
 sys.path.insert(0, str(Path(__file__).parents[2] / "lfric_build"))
 
-from lfric_base_with_test import LFRicBaseWithTest  # noqa: E402
+from lfric_base import LFRicBase  # noqa: E402
+from pfunit_mixin import PfUnitMixin  # noqa: E402
 
 
-class FabSkeleton(LFRicBaseWithTest):
+class FabSkeleton(PfUnitMixin, LFRicBase):
     """
     A Fab-based build script for skeleton. It relies on the LFRicBase class
     to implement the actual functionality, and only provides the required

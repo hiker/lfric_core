@@ -19,12 +19,10 @@ from typing import List, Optional, Iterable, Union
 from fab.api import (ArtefactSet, Category, Exclude, grab_folder, Include,
                      input_to_output_fpath, step)
 
-from lfric_base import LFRicBase
 
-
-class LFRicBaseWithTest(LFRicBase):
+class PfUnitMixin:
     '''
-    This class adds support for pFUnit based testing. It also adds
+    This mixin adds support for pFUnit based testing. It also adds
     a command line option to disable testing. This class will also
     automatically detect if there is no unit-test directory and handle
     this case correctly.
@@ -119,10 +117,10 @@ class LFRicBaseWithTest(LFRicBase):
             # was explicitly disabled on the command line).
             return
 
-        self.config.artefact_store[LFRicBaseWithTest.PF_SOURCE] = set()
+        self.config.artefact_store[PfUnitMixin.PF_SOURCE] = set()
         self.config.artefact_store.copy_artefacts(
             ArtefactSet.INITIAL_SOURCE_FILES,
-            LFRicBaseWithTest.PF_SOURCE,
+            PfUnitMixin.PF_SOURCE,
             suffixes=[".pf", ".PF"])
         pfunit = self.config.tool_box.get_tool("pfunit")
         driver_f90 = pfunit.get_driver_f90()
@@ -147,7 +145,7 @@ class LFRicBaseWithTest(LFRicBase):
         pfunit driver program).
         """
 
-        pf_files = self.config.artefact_store[LFRicBaseWithTest.PF_SOURCE]
+        pf_files = self.config.artefact_store[PfUnitMixin.PF_SOURCE]
         pfunit = self.config.tool_box.get_tool("pfunit")
         all_tests = []
         for pf_file in pf_files:
@@ -170,9 +168,14 @@ class LFRicBaseWithTest(LFRicBase):
         compiler.add_flags(["-I", str(pfunit.get_include_path())])
 
     def preprocess_fortran_step(self) -> None:
+        """
+        Calls Fab's preprocessing of all Fortran files. After preprocessing
+        the sources, this implementation will then also pre-process the
+        test files.
+        """
+        super().preprocess_fortran_step()
         if self._has_test:
             self.preprocess_pfunit_step()
-        super().preprocess_fortran_step()
 
     def analyse_step(
             self,
@@ -180,11 +183,8 @@ class LFRicBaseWithTest(LFRicBase):
             find_programs: bool = False
             ) -> None:
         '''
-        The method overwrites the base class analyse_step.
-        For LFRic, it first runs the preprocess_x90_step and then runs
-        psyclone_step. Finally, it calls Fab's analyse for dependency
-        analysis, ignoring the third party modules that are commonly
-        used by LFRic.
+        The method overwrites the base class analyse_step and adds
+        pfunit to be ignored in the analysis step.
         '''
         if ignore_dependencies is None:
             ignore_dependencies = []
