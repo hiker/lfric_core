@@ -53,7 +53,8 @@ If Fab has issues finding a compiler, you can use the Fab debug option
 ```--available-compilers```, which will list all compilers and linkers Fab has
 identified as being available.
 
-## PFUnit testin
+## Testing with pFUnit
+
 Any application script can additionally inherit from the ``pfunit_mixin.py``
 mixin, e.g.:
 ```
