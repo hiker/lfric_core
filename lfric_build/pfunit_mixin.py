@@ -93,7 +93,7 @@ class PfUnitMixin:
 
         unit_test = "unit-test"
         # Check if there are unit tests
-        if (not self.args.no_test and self.apps_dir / unit_test).is_dir():
+        if (not self.args.no_test) and (self.apps_dir / unit_test).is_dir():
             grab_folder(self.config, src=self.apps_dir / unit_test,
                         dst_label=unit_test)
             self._has_test = True
@@ -163,7 +163,8 @@ class PfUnitMixin:
         # TODO: That should be path-specific
         self.add_preprocessor_flags([f"-D_TEST_SUITES=\"{test_list.name}\"",
                                     "-I", str(pfunit.get_include_path())])
-        self._root_symbol.append("skeleton_unit_test")
+        # TODO: fab_base needs a `name` property
+        self._root_symbol.append(f"{self._name}_unit_test")
         compiler = self.config.tool_box.get_tool(Category.FORTRAN_COMPILER)
         compiler.add_flags(["-I", str(pfunit.get_include_path())])
 
@@ -173,9 +174,12 @@ class PfUnitMixin:
         the sources, this implementation will then also pre-process the
         test files.
         """
-        super().preprocess_fortran_step()
+
+        # We need to call preprocess_pfunit first, since it will create
+        # the test_list.inc file
         if self._has_test:
             self.preprocess_pfunit_step()
+        super().preprocess_fortran_step()
 
     def analyse_step(
             self,
