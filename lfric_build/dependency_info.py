@@ -12,7 +12,7 @@ a dependencies.yaml file.
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 import yaml
 
 
@@ -90,8 +90,13 @@ class DependencyInfo(dict):
     :param filename: The path to the dependencies.yaml file.
     '''
 
-    def __init__(self, filename: Union[str, Path]) -> None:
+    def __init__(self, filename: Optional[Union[str, Path]]) -> None:
         super().__init__()
+
+        # If there are no dependencies, just return (this object will
+        # then represents no dependencies).
+        if not filename:
+            return
 
         with open(filename, "r", encoding="utf8") as stream:
             dependencies = yaml.safe_load(stream)

@@ -19,12 +19,14 @@ from pathlib import Path
 import sys
 from typing import cast, Optional, Iterable, Union
 
-from fab.api import (ArtefactSet, BuildConfig, Category, Exclude, grab_folder,
-                     Include, input_to_output_fpath, Linker, preprocess_x90,
-                     psyclone, psyclone_transmute, step, SuffixFilter)
+from fab.api import (ArtefactSet, BuildConfig, Category, Exclude, git_checkout,
+                     grab_folder, Include, input_to_output_fpath, Linker,
+                     preprocess_x90, psyclone, psyclone_transmute, step,
+                     SuffixFilter)
 from fab.fab_base.fab_base import FabBase
 
 from configurator import configurator
+from dependency_info import DependencyInfo
 from templaterator import Templaterator
 from psyclone_control import PsycloneControl, PsycloneInfo
 
@@ -236,12 +238,22 @@ class LFRicBase(FabBase):
         libs = ['yaxt', 'xios', 'netcdf', 'hdf5']
         return libs + super().get_linker_flags()
 
+    def get_dependencies_file(self) -> Optional[Path]:
+        """
+        Most applications in lfric_apps do not need the dependencies (they
+        only list SimSys script, which are actually ignored). So just return
+        None, which will result in an empty dependency object.
+
+        :returns: the path to the dependencies.yaml file to use
+        """
+        return None
+
     def grab_files_step(self) -> None:
         '''
         This method overwrites the base class grab_files_step. It includes all
         the LFRic core directories that are commonly required for building
-        LFRic applications. It also grabs the psydata directory for profiling,
-        if required.
+        LFRic applications. It also grabs optimisation scripts, and the psydata
+        directory for profiling, if required.
         '''
         dirs = ['infrastructure/source/',
                 'components/driver/source/',
@@ -258,6 +270,41 @@ class LFRicBase(FabBase):
         # Copy the PSyclone Config file into a separate directory
         grab_folder(self.config, src=self.lfric_core_root / "etc",
                     dst_label='psyclone_config')
+
+        # Copy the optimisation scripts into a separate directory
+        grab_folder(self.config, src=self.app_dir / 'optimisation',
+                    dst_label='optimisation')
+
+        # Checkout repositories that are required:
+        # ----------------------------------------
+        dep_infos = DependencyInfo(self.get_dependencies_file())
+        # Call site-specific updates, which allows usage of mirrors.
+        self.site_config.update_repos(dep_infos)
+
+        for repo in dep_infos.get_repo_names():
+            if repo in ["lfric_apps", "lfric_core", "SimSys_Scripts"]:
+                # For now don't support checking out the apps or core repo
+                # (they must be already checked out), and ignore the
+                # SimSys_sripts repository, which is not needed.
+                logger.info(f"Ignoring repository '{repo}'.")
+                continue
+
+            repo_infos = dep_infos.get_repo_info(repo)
+
+            for repo_info in repo_infos:
+                logger.info(f"Extracting '{repo}' from '{repo_info.source}' "
+                            f" to 'science/{repo}', "
+                            f"revisions {repo_info.ref}")
+                try:
+                    git_checkout(self.config,
+                                 repo_info.source,
+                                 dst_label=f'science/{repo}',
+                                 revision=repo_info.ref)
+                except RuntimeError as error:
+                    logger.error(f"Cannot checkout '{repo}' from "
+                                 f"'{repo_info.source}' revision "
+                                 f"'{repo_info.ref}': {error}. ")
+                    sys.exit(-1)
 
     def find_source_files_step(
             self,
