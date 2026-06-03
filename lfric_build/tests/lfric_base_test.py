@@ -25,6 +25,7 @@ from fab.api import (ArtefactSet, BuildConfig, Category, ToolRepository,
 from fab.tools.compiler import CCompiler, FortranCompiler
 
 from lfric_base import LFRicBase
+from dependency_info import DependencyInfo
 
 
 class MockSiteConfig:
@@ -40,6 +41,12 @@ class MockSiteConfig:
         """
         return ["default-profile"]
 
+    def update_repos(self, dep_info: DependencyInfo):
+        """
+        This method is called by the main script to allow each site to
+        replace the URLs of repos with e.g. local mirrors.
+        """
+
     def update_toolbox(self, build_config: BuildConfig) -> None:
         """
         Dummy function where the tool box could be modified
@@ -50,12 +57,6 @@ class MockSiteConfig:
         Simple function to handle command line options.
         """
         self.args = args
-
-    def get_path_flags(self, _build_config: BuildConfig) -> List[str]:
-        """
-        :returns: list of path-specific flags.
-        """
-        return []
 
 
 @pytest.fixture(name="stub_fortran_compiler", scope='function')
@@ -411,7 +412,11 @@ def test_grab_files_step(monkeypatch) -> None:
         # PSyclone config directory
         mock.call(lfric_base.config,
                   src=mock_core/'etc',
-                  dst_label='psyclone_config')
+                  dst_label='psyclone_config'),
+        # PSyclone optimisation scripts
+        mock.call(lfric_base.config,
+                  src=Path('optimisation'),
+                  dst_label='optimisation')
     ]
 
     # Check both number of calls and call arguments
