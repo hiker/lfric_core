@@ -17,7 +17,7 @@ import logging
 import os
 from pathlib import Path
 import sys
-from typing import cast, Optional, Iterable, Union
+from typing import cast, Optional, Iterable, Tuple, Union
 
 from fab.api import (ArtefactSet, BuildConfig, Category, Exclude, git_checkout,
                      grab_folder, Include, input_to_output_fpath, Linker,
@@ -245,15 +245,28 @@ class LFRicBase(FabBase):
         libs = ['yaxt', 'xios', 'netcdf', 'hdf5']
         return libs + super().get_linker_flags()
 
-    def get_dependencies_file(self) -> Optional[Path]:
+    def get_dependencies_info(self) -> Tuple[Optional[Path], list[str]]:
         """
-        Most applications in lfric_apps do not need the dependencies (they
-        only list SimSys script, which are actually ignored). So just return
-        None, which will result in an empty dependency object.
+        This function returns a tuple, consisting of the the path to the
+        dependency.yaml file to use, and a list of repository names (from the
+        dependency.yaml file). If no dependency.yaml file is required for the
+        apps, the first component can be None. If the list of repository names
+        is not empty, only entries in the dependencies.yaml file that are
+        contained in the specified list will be read. This is frequently used
+        by applications that only need some of the repositories listed in
+        dependencies.yaml (e.g. typically jules) to avoid checking out all
+        other lfric_atm dependencies listed in the yaml file).
 
-        :returns: the path to the dependencies.yaml file to use
+        None of the applications in lfric_core do not need the dependencies
+        (the core dependencies.yaml files only list SimSys script, which is
+        not needed. So just return None, [] - which will result in an empty
+        dependency object.
+
+        :returns: the path to the dependencies.yaml file to use and a list
+            of repositories to extract.
+
         """
-        return None
+        return None, []
 
     def grab_files_step(self) -> None:
         '''
@@ -284,7 +297,8 @@ class LFRicBase(FabBase):
 
         # Checkout repositories that are required:
         # ----------------------------------------
-        dep_infos = DependencyInfo(self.get_dependencies_file())
+        dep_file_path, repo_list = self.get_dependencies_info()
+        dep_infos = DependencyInfo(dep_file_path, repo_list)
         # Call site-specific updates, which allows usage of mirrors.
         self.site_config.update_repos(dep_infos)
 

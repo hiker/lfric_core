@@ -77,12 +77,15 @@ class DependencyInfo(dict):
         ...
 
     The information can be accessed as a dictionary, e.g.:
-        gr = DependencyUnfi("$LFRIC_APPS_SRC/dependencies.yaml")
+        gr = DependencyInfo("$LFRIC_APPS_SRC/dependencies.yaml")
         gr["casim"] --> {"source": "git@.../casim.git",
                          "ref": "2025.12.1"}
 
+    A filter can be specified to restrict the repositories that
+    are being handled.
+
     The constructor will check that each dependency has indeed
-    source and ref defined (not that for lfric_apps these are
+    source and ref defined (note that for lfric_apps these are
     defined, but empty, indicating to use the current directory).
 
     If the requested section does not exist, a key error is raised.
@@ -90,7 +93,8 @@ class DependencyInfo(dict):
     :param filename: The path to the dependencies.yaml file.
     '''
 
-    def __init__(self, filename: Optional[Union[str, Path]]) -> None:
+    def __init__(self, filename: Optional[Union[str, Path]],
+                 only_repos: Optional[list[str]]) -> None:
         super().__init__()
 
         # If there are no dependencies, just return (this object will
@@ -102,6 +106,8 @@ class DependencyInfo(dict):
             dependencies = yaml.safe_load(stream)
 
         for repo, all_deps in dependencies.items():
+            if only_repos and repo not in only_repos:
+                continue
             # A repo can either have a single definition, or a list
             # Support both:
             if not isinstance(all_deps, list):
