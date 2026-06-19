@@ -117,6 +117,15 @@ class LFRicBase(FabBase):
                         f"'{psy_info_file}'.")
             self._psyclone_control.read(Path(psy_info_file))
 
+        self._dependency_info = DependencyInfo(*self.get_dependencies_info())
+
+    @property
+    def dependency_info(self) -> DependencyInfo:
+        """
+        :returns: the dependency info used for this application.
+        """
+        return self._dependency_info
+
     @property
     def app_dir(self) -> Path:
         """
@@ -297,12 +306,10 @@ class LFRicBase(FabBase):
 
         # Checkout repositories that are required:
         # ----------------------------------------
-        dep_file_path, repo_list = self.get_dependencies_info()
-        dep_infos = DependencyInfo(dep_file_path, repo_list)
         # Call site-specific updates, which allows usage of mirrors.
-        self.site_config.update_repos(dep_infos)
+        self.site_config.update_repos(self.dependency_info)
 
-        for repo in dep_infos.get_repo_names():
+        for repo in self.dependency_info.get_repo_names():
             if repo in ["lfric_apps", "lfric_core", "SimSys_Scripts"]:
                 # For now don't support checking out the apps or core repo
                 # (they must be already checked out), and ignore the
@@ -310,7 +317,7 @@ class LFRicBase(FabBase):
                 logger.info(f"Ignoring repository '{repo}'.")
                 continue
 
-            repo_infos = dep_infos.get_repo_info(repo)
+            repo_infos = self.dependency_info.get_repo_info(repo)
 
             for repo_info in repo_infos:
                 logger.info(f"Extracting '{repo}' from '{repo_info.source}' "
