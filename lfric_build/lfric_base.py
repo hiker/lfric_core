@@ -17,16 +17,15 @@ import logging
 import os
 from pathlib import Path
 import sys
-from typing import cast, Optional, Iterable, Tuple, Union
+from typing import cast, Optional, Iterable, Union
 
-from fab.api import (ArtefactSet, BuildConfig, Category, Exclude, git_checkout,
+from fab.api import (ArtefactSet, BuildConfig, Category, Exclude,
                      grab_folder, Include, input_to_output_fpath, Linker,
                      preprocess_x90, psyclone, psyclone_transmute, step,
                      SuffixFilter)
 from fab.fab_base.fab_base import FabBase
 
 from configurator import configurator
-from dependency_info import DependencyInfo
 from templaterator import Templaterator
 from psyclone_control import PsycloneControl, PsycloneInfo
 
@@ -116,15 +115,6 @@ class LFRicBase(FabBase):
             logger.info(f"Reading PSyclone configuration file "
                         f"'{psy_info_file}'.")
             self._psyclone_control.read(Path(psy_info_file))
-
-        self._dependency_info = DependencyInfo(*self.get_dependencies_info())
-
-    @property
-    def dependency_info(self) -> DependencyInfo:
-        """
-        :returns: the dependency info used for this application.
-        """
-        return self._dependency_info
 
     @property
     def app_dir(self) -> Path:
@@ -254,29 +244,6 @@ class LFRicBase(FabBase):
         libs = ['yaxt', 'xios', 'netcdf', 'hdf5']
         return libs + super().get_linker_flags()
 
-    def get_dependencies_info(self) -> Tuple[Optional[Path], list[str]]:
-        """
-        This function returns a tuple, consisting of the the path to the
-        dependency.yaml file to use, and a list of repository names (from the
-        dependency.yaml file). If no dependency.yaml file is required for the
-        apps, the first component can be None. If the list of repository names
-        is not empty, only entries in the dependencies.yaml file that are
-        contained in the specified list will be read. This is frequently used
-        by applications that only need some of the repositories listed in
-        dependencies.yaml (e.g. typically jules) to avoid checking out all
-        other lfric_atm dependencies listed in the yaml file).
-
-        None of the applications in lfric_core do not need the dependencies
-        (the core dependencies.yaml files only list SimSys script, which is
-        not needed. So just return None, [] - which will result in an empty
-        dependency object.
-
-        :returns: the path to the dependencies.yaml file to use and a list
-            of repositories to extract.
-
-        """
-        return None, []
-
     def grab_files_step(self) -> None:
         '''
         This method overwrites the base class grab_files_step. It includes all
@@ -303,36 +270,6 @@ class LFRicBase(FabBase):
         # Copy the optimisation scripts into a separate directory
         grab_folder(self.config, src=self.app_dir / 'optimisation',
                     dst_label='optimisation')
-
-        # Checkout repositories that are required:
-        # ----------------------------------------
-        # Call site-specific updates, which allows usage of mirrors.
-        self.site_config.update_repos(self.dependency_info)
-
-        for repo in self.dependency_info.get_repo_names():
-            if repo in ["lfric_apps", "lfric_core", "SimSys_Scripts"]:
-                # For now don't support checking out the apps or core repo
-                # (they must be already checked out), and ignore the
-                # SimSys_sripts repository, which is not needed.
-                logger.info(f"Ignoring repository '{repo}'.")
-                continue
-
-            repo_infos = self.dependency_info.get_repo_info(repo)
-
-            for repo_info in repo_infos:
-                logger.info(f"Extracting '{repo}' from '{repo_info.source}' "
-                            f" to 'science/{repo}', "
-                            f"revisions {repo_info.ref}")
-                try:
-                    git_checkout(self.config,
-                                 repo_info.source,
-                                 dst_label=f'science/{repo}',
-                                 revision=repo_info.ref)
-                except RuntimeError as error:
-                    logger.error(f"Cannot checkout '{repo}' from "
-                                 f"'{repo_info.source}' revision "
-                                 f"'{repo_info.ref}': {error}. ")
-                    sys.exit(-1)
 
     def find_source_files_step(
             self,
