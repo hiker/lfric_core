@@ -25,7 +25,6 @@ from fab.api import (ArtefactSet, BuildConfig, Category, ToolRepository,
 from fab.tools.compiler import CCompiler, FortranCompiler
 
 from lfric_base import LFRicBase
-from dependency_info import DependencyInfo
 
 
 class MockSiteConfig:
@@ -41,7 +40,7 @@ class MockSiteConfig:
         """
         return ["default-profile"]
 
-    def update_repos(self, dep_info: DependencyInfo):
+    def update_repos(self, dep_info):
         """
         This method is called by the main script to allow each site to
         replace the URLs of repos with e.g. local mirrors.
