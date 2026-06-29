@@ -77,7 +77,7 @@ def stub_c_compiler_init() -> CCompiler:
     Provides a minimal C compiler.
     """
     compiler = CCompiler("some C compiler", "scc", "stub",
-                         version_regex=r"([\d.]+)",)
+                         version_regex=r"([\d.]+)")
     compiler["openmp"] = '-omp'
     return compiler
 
