@@ -21,8 +21,6 @@ from default.setup_script_intel_classic import setup_script_intel_classic
 from default.setup_script_intel_llvm import setup_script_intel_llvm
 from default.setup_script_nvidia import setup_script_nvidia
 
-from dependency_info import DependencyInfo
-
 
 class Config:
     '''
@@ -100,7 +98,7 @@ class Config:
         # initialising compilers
         self._args = args
 
-    def update_repos(self, dep_info: DependencyInfo):
+    def update_repos(self, dep_info):
         """
         This method is called by the main script to allow each site to
         replace the URLs of repos with e.g. local mirrors.
