@@ -248,8 +248,7 @@ class LFRicBase(FabBase):
         '''
         This method overwrites the base class grab_files_step. It includes all
         the LFRic core directories that are commonly required for building
-        LFRic applications. It also grabs optimisation scripts, and the psydata
-        directory for profiling, if required.
+        LFRic applications. It also grabs optimisation scripts.
         '''
         dirs = ['infrastructure/source/',
                 'components/driver/source/',
