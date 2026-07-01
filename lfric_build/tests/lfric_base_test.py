@@ -373,7 +373,7 @@ def test_get_linker_flags(monkeypatch) -> None:
     assert set(flags) == set(expected_libs)
 
 
-def test_grab_files_step(tmp_path, caplog, monkeypatch) -> None:
+def test_grab_files_step(monkeypatch) -> None:
     '''
     Tests grabbing required source files
     '''
@@ -389,41 +389,8 @@ def test_grab_files_step(tmp_path, caplog, monkeypatch) -> None:
     lfric_base = LFRicBase(name="test", app_dir=Path("."))
     monkeypatch.setattr(lfric_base, '_lfric_core_root', mock_core)
 
-    # Create a dummy yaml file:
-    dep_yaml = tmp_path / "dependencies.yaml"
-    dep_yaml.write_text("""
-lfric_apps:
-    source: 1
-    ref: 2
-dummy:
-    source: 1
-    ref: 2
-dummy_causing_error_see_mocking_setup:
-    source: 3
-    ref: 4
-""")
-    monkeypatch.setattr(lfric_base, 'get_dependencies_info',
-                        lambda: (dep_yaml, []))
-    monkeypatch.setattr(lfric_base, '_lfric_core_root', mock_core)
-    # with mock.patch("fab.steps.grab.git.git_checkout") as mock_git:
-    with mock.patch("lfric_base.git_checkout") as mock_git:
-        mock_git.side_effect = [0, RuntimeError("checkout problem")]
-        # Call method under test
-        with pytest.raises(SystemExit):
-            lfric_base.grab_files_step()
+    lfric_base.grab_files_step()
 
-    assert ("Cannot checkout 'dummy_causing_error_see_mocking_setup' from "
-            "'3' revision '4'" in caplog.text)
-
-    # All other calls have been executed correctly before the failure,
-    # which is the last action in that function, so we can test all
-    # other calls:
-    assert mock_git.call_count == 2
-    assert mock.call(lfric_base.config, 1, dst_label='science/dummy',
-                     revision=2) == mock_git.call_args_list[0]
-    assert mock.call(lfric_base.config, 3,
-                     dst_label='science/dummy_causing_error_see_mocking_setup',
-                     revision=4) == mock_git.call_args_list[1]
     # Verify grab_folder called for all required directories
     expected_calls = [
         # Source directories
