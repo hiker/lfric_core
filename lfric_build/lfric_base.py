@@ -441,7 +441,10 @@ class LFRicBase(FabBase):
 
         # Create a copy of the kernel_roots list, so that we don't modify the
         # original list.
-        kernel_roots = kernel_roots[:] or []
+        if kernel_roots:
+            kernel_roots = kernel_roots[:]
+        else:
+            kernel_roots = []
         standard_kernel_dir = self.config.build_output / "kernel"
         if standard_kernel_dir not in kernel_roots and standard_kernel_dir.exists():
             kernel_roots.append(standard_kernel_dir)
