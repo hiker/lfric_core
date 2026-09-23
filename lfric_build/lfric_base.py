@@ -124,12 +124,12 @@ class LFRicBase(FabBase):
         else:
             # This default rule implements the "file-specific if exists,
             # otherwise global.py" rule.
-            control_list = [Path(self.lfric_core_root / "lfric_build" /
-                            "psyclone_control.yaml")]
+            control_list = [self.lfric_core_root / "lfric_build" /
+                            "psyclone_control.yaml"]
         for psy_info_file in control_list:
             logger.info(f"Reading PSyclone configuration file "
                         f"'{psy_info_file}'.")
-            self._psyclone_control.read(Path(psy_info_file))
+            self._psyclone_control.read(psy_info_file)
 
     @property
     def app_dir(self) -> Path:
@@ -439,7 +439,13 @@ class LFRicBase(FabBase):
                     f"{self._psyclone_control.to_yaml()}\n"
                     f"# -------------------\n")
 
-        kernel_roots = kernel_roots or []
+        # Create a copy of the kernel_roots list, so that we don't modify the
+        # original list.
+        kernel_roots = kernel_roots[:] or []
+        standard_kernel_dir = self.config.build_output / "kernel"
+        if standard_kernel_dir not in kernel_roots and standard_kernel_dir.exists():
+            kernel_roots.append(standard_kernel_dir)
+
         psyclone_cli_args = ["--config", self.get_psyclone_config()]
         if additional_parameters:
             psyclone_cli_args.extend(additional_parameters)
@@ -465,8 +471,7 @@ class LFRicBase(FabBase):
                                         f"{orig_pythonpath}")
             if psyclone_info.api:
                 psyclone(self.config,
-                         kernel_roots=(kernel_roots +
-                                       [self.config.build_output / "kernel"]),
+                         kernel_roots=kernel_roots,
                          transformation_script=self.get_transformation_script,
                          api=psyclone_info.api,
                          cli_args=psyclone_cli_args,
