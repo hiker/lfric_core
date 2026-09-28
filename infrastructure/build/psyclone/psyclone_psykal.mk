@@ -42,20 +42,16 @@ endif
 export PSYCLONE_WORKERS ?= $(if $(MAKE_THREADS),$(MAKE_THREADS),$(shell nproc))
 #
 
-ALGORITHM_F_FILES := $(patsubst $(SOURCE_DIR)/%.X90, \
-                                $(WORKING_DIR)/%.f90, \
-                                $(shell find $(SOURCE_DIR) -name '*.X90' -print))
-
-ALGORITHM_f_FILES := $(patsubst $(SOURCE_DIR)/%.x90, \
-                                $(WORKING_DIR)/%.f90, \
-                                $(shell find $(SOURCE_DIR) -name '*.x90' -print))
+ALGORITHM_f_FILES := $(patsubst %.x90, \
+                                %.f90, \
+                                $(shell find $(WORKING_DIR) -name '*.x90' -print))
 
 DIRECTORIES := $(patsubst $(SOURCE_DIR)%,$(WORKING_DIR)%, \
                           $(shell find $(SOURCE_DIR) -type d -printf '%p/\n'))
 PSYCLONE_CONFIG_FILE ?= $(CORE_ROOT_DIR)/etc/psyclone.cfg
 
 .PHONY: psyclone
-psyclone: $(ALGORITHM_F_FILES) $(ALGORITHM_f_FILES)
+psyclone: $(ALGORITHM_f_FILES)
 
 include $(LFRIC_BUILD)/lfric.mk
 include $(LFRIC_BUILD)/fortran.mk
